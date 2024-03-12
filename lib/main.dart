@@ -1,8 +1,10 @@
 import 'dart:convert';
-
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/gestures.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,7 +16,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       theme: ThemeData.dark(),
       debugShowCheckedModeBanner: false,
       home: const NotesPage(),
@@ -70,6 +72,25 @@ class _NotesPageState extends State<NotesPage> {
           deletedNote); // Call a function to delete the note from storage
     });
   }
+  Future<void> _sendEmail(recipientEmail) async {
+    final Uri emailLaunchUri = Uri(
+      scheme: 'mailto',
+      path: recipientEmail,
+      queryParameters: {
+        'subject': 'Subject here',
+        'body': 'Type your message here',
+      },
+    );
+
+    final String url = emailLaunchUri.toString();
+
+    try {
+      // ignore: deprecated_member_use
+      await launch("https://t.me/S_J_O_D");
+    } catch (e) {
+      Get.snackbar("خطأ", "لايمكن فتح الرابط بسبب $e");
+    }
+  }
 
   void deleteNoteFromStorage(Note note) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -113,10 +134,36 @@ class _NotesPageState extends State<NotesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CupertinoNavigationBar(
+      
+      appBar:  CupertinoNavigationBar(
+        backgroundColor:Colors.amberAccent,
+        leading: TextButton(
+
+        onPressed: () {
+          Get.snackbar!(
+      
+      'المطور',
+      'المهندس سجاد سلام\nاضغط لأرسال رسالة ',
+      snackStyle : SnackStyle.GROUNDED ,
+      onTap: (snake) {
+        _sendEmail('sajjad.salam.teama@gmail.com');
+      },
+      // messageText: Text("data"),
+      colorText: Colors.white,
+      
+      
+      snackPosition: SnackPosition.BOTTOM,
+      
+      duration: const Duration(seconds: 3),
+
+    );
+        },
+       
+        child: const Icon(Icons.info_outline,color: Colors.white,),
+      ),
         previousPageTitle: "رجوع",
-        middle: Text(
-          "الملاحضات",
+        middle: const Text(
+          "ملاحضاتي",
           style: TextStyle(fontFamily: "myfont", fontSize: 25),
         ),
       ),
@@ -149,36 +196,24 @@ class _NotesPageState extends State<NotesPage> {
               ),
             ),
             const SizedBox(height: 20),
-            CupertinoTextField(
-              decoration: BoxDecoration(
-                // color: CupertinoColors.extraLightBackgroundGray,
-                borderRadius: BorderRadius.circular(10),
-              ),
+            TextField(
               controller: noteController,
               autocorrect: true,
               textInputAction: TextInputAction.done,
               onSubmitted: (value) {
                 addNote();
               },
-              placeholder: ".... كتابة ملاحظة ",
-              // maxLength: 10,
               textAlign: TextAlign.end,
               style: const TextStyle(
                 fontFamily: "myfont",
                 color: Colors.white, // Set the color to white
               ),
+              decoration: const InputDecoration.collapsed(
+    hintText:  ".... كتابة ملاحظة "
+  ),
             ),
             const SizedBox(height: 10),
-            ElevatedButton(
-              style: ButtonStyle(backgroundColor: amberColor),
-              onPressed: () {
-                addNote();
-              },
-              child: const Text(
-                'اضافة ملاحضة',
-                style: TextStyle(fontFamily: "myfont", fontSize: 20),
-              ),
-            ),
+         
           ],
         ),
       ),
